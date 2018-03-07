@@ -16,20 +16,23 @@ if (!empty($_FILES)) {
   $imageName = NULL;
 }
 
-$sql = "INSERT INTO user(fullname,email,password,opassword) VALUES (
+$sql = "INSERT INTO user(fullname,email,password,opassword,created_at) VALUES (
             :fullname,
             :email,
             :password,
-            :opassword
+            :opassword,
+            :created_at
           )";
                                           
 $stmt = $conn->prepare($sql);
+
+$current_datetime = date('Y-m-d H:i:s');
                                               
 $stmt->bindParam(':fullname', $_POST['fullname'], PDO::PARAM_STR);     
 $stmt->bindParam(':email', $_POST['email'], PDO::PARAM_STR);    
 $stmt->bindParam(':password', $passwordhash, PDO::PARAM_STR); 
 $stmt->bindParam(':opassword', $_POST['password'], PDO::PARAM_STR); 
-
+$stmt->bindParam(':created_at', $current_datetime, PDO::PARAM_STR); 
 
 if($stmt->execute() == true)
 {   
@@ -97,6 +100,12 @@ if($stmt->execute() == true)
       <div class="form-group has-feedback">
         <input type="password" class="form-control" name="password2" id="password2" placeholder="Retype password">
         <span class="glyphicon glyphicon-log-in form-control-feedback"></span>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">
+          <button type="submit" class="btn btn-primary btn-block btn-flat">Register</button>
+        </div>
+        <!-- /.col -->
       </div>
     </form>
 

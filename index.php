@@ -1,3 +1,21 @@
+<?php 
+$isGuest = true;
+
+  session_start();
+ 
+  if (!empty($_SESSION)) {
+    
+    if ($_SESSION['loggedin'] == true) {
+      $isGuest = false;
+    }
+
+  }
+
+if ($isGuest) {
+  header("Location:login.php");
+}
+
+?>
 <!DOCTYPE html>
 <html>
 <head>

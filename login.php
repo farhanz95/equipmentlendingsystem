@@ -1,3 +1,88 @@
+<?php 
+
+if (!empty($_POST)) {
+
+require_once('opendb.php');
+
+$password = $_POST['passwordLogin'];
+$passwordhash = hash('md5', $password);
+
+$sql= "SELECT * FROM user WHERE email = :email && password = :password "; 
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(':email', $_POST['email'] , PDO::PARAM_INT); 
+$stmt->bindParam(':password', $passwordhash , PDO::PARAM_STR); 
+$stmt->execute();
+
+$row = $stmt->fetch();
+
+  if($stmt->execute() == true)
+  {
+        if($stmt->rowCount() > 0)
+        {     
+              // If Admin
+              if ($row['role'] == 1) {
+                // If Account Not Active
+                if (!$row['active']) {
+                  echo "<script>
+                alert('This Account Is Inactive');
+                window.location.href='index.php';
+                </script>";die;
+                }
+
+              }
+
+              $_SESSION['id'] = $row['user_id'];
+              $_SESSION['fullname'] = $row['fullname'];
+              $_SESSION['loggedin'] = true;
+              $_SESSION['role'] = $row['role'];
+
+              if ($row['role'] == 1) {
+                $_SESSION['isAdmin'] = true;
+              }
+
+              // UPDATE user last logged in date
+
+              $current_datetime = date('Y-m-d H:i:s');
+
+              $sql = "UPDATE user SET last_logged_in = :last_logged_in
+                      WHERE user_id = :user_id";
+              $stmt = $conn->prepare($sql);                             
+              $stmt->bindParam(':user_id', $row['user_id'], PDO::PARAM_STR); 
+              $stmt->bindParam(':last_logged_in', $current_datetime , PDO::PARAM_STR);
+              $stmt->execute(); 
+                                               
+              if($stmt->execute() == true){
+              }else{ 
+                echo $stmt->errorCode(); 
+              }
+
+              // END UPDATE user last logged in date
+
+
+              echo "<script>
+              window.location.href='index.php';
+              </script>";
+        }
+        else
+        {
+              echo "<script>
+              alert('Incorrect username or password');
+              </script>";
+        }
+  }
+
+  else
+  {
+        echo $stmt->errorCode();
+  }
+
+}else{
+
+
+}
+
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,19 +115,19 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="index2.html"><b>Admin</b>LTE</a>
+    <a href="index.php"><b>Admin</b>LTE</a>
   </div>
   <!-- /.login-logo -->
   <div class="login-box-body">
     <p class="login-box-msg">Sign in to start your session</p>
 
-    <form action="index2.html" method="post">
+    <form action="" method="post" id="loginForm">
       <div class="form-group has-feedback">
-        <input type="email" class="form-control" placeholder="Email">
+        <input type="email" class="form-control" name="email" placeholder="Email">
         <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input type="password" class="form-control" placeholder="Password">
+        <input type="password" class="form-control" name="passwordLogin" placeholder="Password">
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
       <div class="row">
@@ -69,10 +154,18 @@
 </div>
 <!-- /.login-box -->
 
+<script src="js/jquery-3.3.1.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.17.0/jquery.validate.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.17.0/additional-methods.min.js"></script>
+
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="validation.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.dataTables.js"></script>
+
 <!-- jQuery 3 -->
-<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<!-- <script src="bower_components/jquery/dist/jquery.min.js"></script> -->
 <!-- Bootstrap 3.3.7 -->
-<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<!-- <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script> -->
 <!-- iCheck -->
 <script src="plugins/iCheck/icheck.min.js"></script>
 <script>
